@@ -1,0 +1,7 @@
+# Building the edison image
+unzip iot-devkit-yp-poky-edison-20160606.zip
+cd iot-devkit-yp-poky-edison-20160606/poky/
+source oe-init-build-env ../build_edison/
+bitbake edison-image u-boot
+../poky/meta-intel-edison/utils/flash/postBuild.sh .
+zip -r toFlash.zip toFlash
