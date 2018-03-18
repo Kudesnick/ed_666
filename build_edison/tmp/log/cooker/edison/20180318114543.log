@@ -1,0 +1,3 @@
+WARNING: Host distribution "Ubuntu-16.04" has not been validated with this version of the build system; you may possibly experience unexpected failures. It is recommended that you use a tested distribution.
+WARNING: No recipes available for:
+  /mnt/d/git/st/ed_666/build_edison/../poky/meta-intel-iot-devkit/recipes-kernel/linux/linux-yocto-quark_3.8.bbappend

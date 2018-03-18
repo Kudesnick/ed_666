@@ -1,0 +1,3 @@
+SANITY_VERSION 1
+TMPDIR /mnt/d/git/st/ed_666/build_edison/tmp
+SSTATE_DIR /mnt/d/git/st/ed_666/build_edison/sstate-cache
