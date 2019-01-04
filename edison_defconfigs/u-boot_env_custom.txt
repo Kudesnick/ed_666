@@ -1,0 +1,87 @@
+=> printenv
+audio_codec_name=audio_codec="dummy"
+boot_edsboot=zboot 0x100000 0 0x3000000 0x1000000
+boot_target_cmd=run do_flash_os;run do_probe_dfu;run do_compute_target;run mmc-bootargs;run load_kernel;zboot ${loadaddr}
+bootargs_console=console=ttyMFD2 earlyprintk=ttyMFD2,keep
+bootargs_debug=loglevel=4
+bootargs_edsboot=console=tty1 console=ttyS2,115200n8 rootfstype=ramfs rw
+bootargs_ethconfig=rndis
+bootargs_target=multi-user
+bootcmd=setenv bootargs ${bootargs_edsboot}; run load_edsboot; run boot_edsboot
+bootcmd_def=echo Target:${target_name}; run do_partition; run do_handle_bootargs_mode;
+bootcmd_edsboot=setenv bootargs ${bootargs_edsboot}; run load_edsboot; run boot_edsboot
+bootdelay=5
+dfu_alt_info=ifwi00 mmc 0 8192 mmcpart 1;ifwib00 mmc 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7
+dfu_alt_info_ram=kernel ram ${loadaddr} 0x800000
+dfu_alt_info_reset=reset ram 0x0 0x0
+dfu_to_sec=5
+do_audio_support=setenv audio_support platform_mrfld_audio.${audio_codec_name}
+do_boot=run boot_target_cmd;
+do_bootargs_rootfs=setenv bootargs_rootfs rootwait root=PARTUUID=${uuid_rootfs} rootfstype=ext4
+do_compute_target=if itest.b ${first_install_retry} -gt ${first_install_max_retries} || itest.b ${ota_update_retry} -gt ${ota_update_max_retries}; then echo "Switch to Rescue target"; setenv bootargs_target rescue; saveenv; fi
+do_dfu_alt_info_ifwi=setenv dfu_alt_info "ifwi${hardware_id} mmc 0 8192 mmcpart 1;ifwib${hardware_id} mmc 0 8192 mmcpart 2"
+do_dfu_alt_info_mmc=setenv dfu_alt_info "ifwi${hardware_id} mmc 0 8192 mmcpart 1;ifwib${hardware_id} mmc 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7"
+do_dnx=setenv dfu_alt_info ${dfu_alt_info_ram};dfu 0 ram 0 ram;run bootcmd
+do_fallback=echo "Unknown boot mode: $bootargs_mode"; env delete -f bootargs_mode; saveenv; echo "Resetting to default boot mode and reboot..."; reset;
+do_flash=run do_force_flash_os;
+do_flash_ifwi=run do_dfu_alt_info_ifwi ; dfu 0 mmc 0
+do_flash_os=if itest.b ${do_flash_os_done} -eq 1 ; then echo "Flashing already done..." ; else run do_force_flash_os; fi
+do_flash_os_done=1
+do_flashall=run do_partition;run do_flash_ifwi;run do_flash_os
+do_force_flash_os=run do_dfu_alt_info_mmc ; sleep 1 ; setenv do_flash_os_done 1 ; saveenv ; dfu 0 mmc 0
+do_force_partition=echo "Partitioning using GPT"; gpt write mmc 0 ${partitions} ; mmc rescan; setenv do_partition_done 1 ; saveenv
+do_handle_bootargs_mode=run do_preprocess_bootargs_mode; if itest.s $bootargs_mode == "ota" ; then run do_ota; fi; if itest.s $bootargs_mode == "boot" ; then run do_boot; fi; if itest.s $bootargs_mode == "flash"; then run do_flash; fi; run do_fallback; exit;
+do_load_ota_scr=if fatload mmc 0:9 $ota_script_addr ota_update.scr ; then setenv ota_status 0 ; else setenv ota_status 1 ; fi
+do_ota=run do_ota_init ; run do_load_ota_scr ; run do_source_ota_scr ; run do_ota_clean
+do_ota_clean=saveenv ; reset
+do_ota_init=setenv ota_status 1 ; env delete -f bootargs_mode
+do_partition=if itest.b ${do_partition_done} -eq 1; then echo "Partitioning already done..."; else run do_force_partition ; fi
+do_partition_done=1
+do_preprocess_bootargs_mode=if env exists bootargs_mode ; then ; else setenv bootargs_mode "boot" ;fi;
+do_probe_dfu=run do_dfu_alt_info_mmc ; dfu 0 mmc 0 $dfu_to_sec
+do_source_ota_scr=if test $ota_status -eq 0 ; then if source $ota_script_addr ; then setenv ota_status 0 ; else setenv ota_status 2 ; fi ; fi
+environment_name=rootfs.cpio.bz2
+fdtcontroladdr=3d469220
+fileaddr=3000000
+filesize=1b47c9
+first_install_max_retries=3
+first_install_retry=0
+hardware_id=00
+init_dfu=run do_dfu_alt_info_mmc ; saveenv
+kernel_name=bzImage
+ld_mmc7=setenv bootcmd ${bootcmd_def} ; saveenv ; run bootcmd
+ld_mmc9=setenv bootcmd ${bootcmd_edsboot} ; saveenv ; run bootcmd
+load_edsboot=load mmc 0:9 0x100000 ${ver_krn}${kernel_name}; load mmc 0:9 0x3000000 ${ver_env}${environment_name};
+load_kernel=fatload mmc 0:7 ${loadaddr} vmlinuz
+loadaddr=0x100000
+mmc-bootargs=run do_bootargs_rootfs; run do_audio_support; setenv bootargs ${bootargs_rootfs} ${bootargs_console} ${bootargs_debug} g_multi.ethernet_config=${bootargs_ethconfig} systemd.unit=${bootargs_target}.target hardware_id=${hardware_id} g_multi.iSerialNumber=${serial#} g_multi.dev_addr=${usb0addr} ${audio_support}
+ota_abort=0
+ota_done=1
+ota_image_name=edison-image-edison.ext4
+ota_script_addr=0x100000
+ota_status=0
+ota_update_max_retries=3
+ota_update_retry=0
+ota_verbose=1
+partitions=uuid_disk=${uuid_disk};name=u-boot0,start=1MiB,size=2MiB,uuid=${uuid_uboot0};name=u-boot-env0,size=1MiB,uuid=${uuid_uboot_env0};name=u-boot1,size=2MiB,uuid=${uuid_uboot1};name=u-boot-env1,size=1MiB,uuid=${uuid_uboot_env1};name=factory,size=1MiB,uuid=${uuid_factory};name=panic,size=24MiB,uuid=${uuid_panic};name=boot,size=32MiB,uuid=${uuid_boot};name=rootfs,size=1536MiB,uuid=${uuid_rootfs};name=update,size=768MiB,uuid=${uuid_update};name=home,size=-,uuid=${uuid_home};
+serial#=20698a0e021ae332ac454026bc5613e7
+stderr=serial
+stdin=serial
+stdout=serial
+target_name=blank
+usb0addr=02:00:86:56:13:e7
+uuid_boot=db88503d-34a5-3e41-836d-c757cb682814
+uuid_disk=21200400-0804-0146-9dcc-a8c51255994f
+uuid_factory=333a128e-d3e3-b94d-92f4-d3ebd9b3224f
+uuid_home=f13a0978-b1b5-1a4e-8821-39438e24b627
+uuid_panic=f20aa902-1c5d-294a-9177-97a513e3cae4
+uuid_rootfs=012b3303-34ac-284d-99b4-34e03a2335f4
+uuid_uboot0=d117f98e-6f2c-d04b-a5b2-331a19f91cb2
+uuid_uboot1=8a4bb8b4-e304-ae48-8536-aff5c9c495b1
+uuid_uboot_env0=25718777-d0ad-7443-9e60-02cb591c9737
+uuid_uboot_env1=08992135-13c6-084b-9322-3391ff571e19
+uuid_update=faec2ecf-8544-e241-b19d-757e796da607
+ver_env=02_
+ver_krn=02_
+
+Environment size: 5920/65531 bytes
