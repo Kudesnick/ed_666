@@ -11,7 +11,7 @@ bootcmd=setenv bootargs ${bootargs_edsboot}; run load_edsboot; run boot_edsboot
 bootcmd_def=echo Target:${target_name}; run do_partition; run do_handle_bootargs_mode;
 bootcmd_edsboot=setenv bootargs ${bootargs_edsboot}; run load_edsboot; run boot_edsboot
 bootdelay=5
-dfu_alt_info=ifwi00 mmc 0 8192 mmcpart 1;ifwib00 mmc 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7
+dfu_alt_info=ifwi00 raw 0 8192 mmcpart 1;ifwib00 raw 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7
 dfu_alt_info_ram=kernel ram ${loadaddr} 0x800000
 dfu_alt_info_reset=reset ram 0x0 0x0
 dfu_to_sec=5
@@ -19,8 +19,8 @@ do_audio_support=setenv audio_support platform_mrfld_audio.${audio_codec_name}
 do_boot=run boot_target_cmd;
 do_bootargs_rootfs=setenv bootargs_rootfs rootwait root=PARTUUID=${uuid_rootfs} rootfstype=ext4
 do_compute_target=if itest.b ${first_install_retry} -gt ${first_install_max_retries} || itest.b ${ota_update_retry} -gt ${ota_update_max_retries}; then echo "Switch to Rescue target"; setenv bootargs_target rescue; saveenv; fi
-do_dfu_alt_info_ifwi=setenv dfu_alt_info "ifwi${hardware_id} mmc 0 8192 mmcpart 1;ifwib${hardware_id} mmc 0 8192 mmcpart 2"
-do_dfu_alt_info_mmc=setenv dfu_alt_info "ifwi${hardware_id} mmc 0 8192 mmcpart 1;ifwib${hardware_id} mmc 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7"
+do_dfu_alt_info_ifwi=setenv dfu_alt_info "ifwi${hardware_id} raw 0 8192 mmcpart 1;ifwib${hardware_id} raw 0 8192 mmcpart 2"
+do_dfu_alt_info_mmc=setenv dfu_alt_info "ifwi${hardware_id} raw 0 8192 mmcpart 1;ifwib${hardware_id} raw 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7"
 do_dnx=setenv dfu_alt_info ${dfu_alt_info_ram};dfu 0 ram 0 ram;run bootcmd
 do_fallback=echo "Unknown boot mode: $bootargs_mode"; env delete -f bootargs_mode; saveenv; echo "Resetting to default boot mode and reboot..."; reset;
 do_flash=run do_force_flash_os;
@@ -42,8 +42,7 @@ do_probe_dfu=run do_dfu_alt_info_mmc ; dfu 0 mmc 0 $dfu_to_sec
 do_source_ota_scr=if test $ota_status -eq 0 ; then if source $ota_script_addr ; then setenv ota_status 0 ; else setenv ota_status 2 ; fi ; fi
 environment_name=rootfs.cpio.bz2
 fdtcontroladdr=3d469220
-fileaddr=3000000
-filesize=1b47c9
+fileaddr=100000
 first_install_max_retries=3
 first_install_retry=0
 hardware_id=00
@@ -55,8 +54,10 @@ load_edsboot=load mmc 0:9 0x100000 ${ver_krn}${kernel_name}; load mmc 0:9 0x3000
 load_kernel=fatload mmc 0:7 ${loadaddr} vmlinuz
 loadaddr=0x100000
 mmc-bootargs=run do_bootargs_rootfs; run do_audio_support; setenv bootargs ${bootargs_rootfs} ${bootargs_console} ${bootargs_debug} g_multi.ethernet_config=${bootargs_ethconfig} systemd.unit=${bootargs_target}.target hardware_id=${hardware_id} g_multi.iSerialNumber=${serial#} g_multi.dev_addr=${usb0addr} ${audio_support}
-ota_abort=0
-ota_done=1
+ota_abort=1
+ota_abort_reason=part find mmc 0 label:update u_part_num failed: 1
+ota_checked=0
+ota_done=0
 ota_image_name=edison-image-edison.ext4
 ota_script_addr=0x100000
 ota_status=0
@@ -84,4 +85,4 @@ uuid_update=faec2ecf-8544-e241-b19d-757e796da607
 ver_env=02_
 ver_krn=02_
 
-Environment size: 5920/65531 bytes
+Environment size: 5984/65531 bytes
