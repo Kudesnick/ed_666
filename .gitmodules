@@ -16,3 +16,6 @@
 [submodule "u-boot_intel"]
 	path = u-boot_intel
 	url = https://github.com/intel/edison-u-boot.git
+[submodule "u-boot_kudesnick"]
+	path = u-boot_kudesnick
+	url = https://github.com/Kudesnick/u-boot.git
