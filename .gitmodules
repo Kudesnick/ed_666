@@ -13,3 +13,6 @@
 [submodule "u-boot"]
 	path = u-boot
 	url = http://git.denx.de/u-boot.git
+[submodule "u-boot_intel"]
+	path = u-boot_intel
+	url = https://github.com/intel/edison-u-boot.git
