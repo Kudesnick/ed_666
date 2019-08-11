@@ -7,15 +7,6 @@
 [submodule "kernel_andy-shev"]
 	path = kernel_andy-shev
 	url = https://github.com/andy-shev/linux.git
-[submodule "u-boot_andy-shev"]
-	path = u-boot_andy-shev
-	url = https://github.com/andy-shev/u-boot.git
-[submodule "u-boot"]
-	path = u-boot
-	url = http://git.denx.de/u-boot.git
-[submodule "u-boot_intel"]
-	path = u-boot_intel
-	url = https://github.com/intel/edison-u-boot.git
 [submodule "u-boot_kudesnick"]
 	path = u-boot_kudesnick
 	url = https://github.com/Kudesnick/u-boot.git
