@@ -7,6 +7,6 @@
 [submodule "kernel_andy-shev"]
 	path = kernel_andy-shev
 	url = https://github.com/andy-shev/linux.git
-[submodule "u-boot_kudesnick"]
-	path = u-boot_kudesnick
+[submodule "u-boot"]
+	path = u-boot
 	url = https://github.com/Kudesnick/u-boot.git
