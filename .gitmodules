@@ -9,4 +9,4 @@
 	url = https://github.com/andy-shev/linux.git
 [submodule "u-boot"]
 	path = u-boot
-	url = https://github.com/Kudesnick/u-boot.git
+	url = https://github.com/kudesnick/u-boot.git
